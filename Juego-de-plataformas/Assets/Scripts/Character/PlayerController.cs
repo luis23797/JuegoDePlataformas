@@ -8,15 +8,19 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool groundedPlayer;
-    public float playerSpeed = 2.0f;
+    public float playerInitialSpeed = 4.0f;
+    public float playerSpeed = 4.0f;
     public float jumpHeight = 1.0f;
     private float gravityValue = -9.81f;
     private string animacionActual;
-
+    public float playerRunSpeed = 7.0f;
+    public bool running = false;
     Animator animator;
     //Estados de animacion
     const string iddle = "iddle";
     const string walk = "walk";
+    const string fall = "fall";
+    const string prun = "prun";
     void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
@@ -29,17 +33,40 @@ public class PlayerController : MonoBehaviour
 
 
         //Debug.Log(Input.GetButtonDown("Jump"));
-        if (groundedPlayer && Input.GetButtonDown("Jump"))
-        {
-            jump();
-        }
         
+        if (groundedPlayer)
+        {
+            if (Input.GetButtonDown("Jump"))
+            {
+                jump();
+            }
+            if (Input.GetButton("Run") && Input.GetAxis("Horizontal") != 0)
+            {
+                changeAnimationState(prun);
+                running = true;
+                run();
+
+            }
+            if (Input.GetAxis("Horizontal") == 0)
+            {
+                running = false;
+            }
+            if (!Input.GetButton("Run") && running)
+            {
+                running = false;
+                changeAnimationState(walk);
+            }
+        }
     }
     private void FixedUpdate()
     {
+        if (!running || !controller.isGrounded)
+        {
+            playerSpeed = playerInitialSpeed;
+        }
         groundedPlayer = controller.isGrounded;
         Debug.Log(controller.isGrounded);
-        if (controller.isGrounded)
+        if (controller.isGrounded && !running)
         {
             if (Input.GetAxis("Horizontal")!=0)
             {
@@ -50,6 +77,10 @@ public class PlayerController : MonoBehaviour
                 changeAnimationState(iddle);
             }
            
+        }
+        if (!controller.isGrounded)
+        {
+            changeAnimationState(fall);
         }
         if (groundedPlayer && playerVelocity.y < 0)
         {
@@ -78,6 +109,11 @@ public class PlayerController : MonoBehaviour
         if (animacionActual == nuevoEstado) return;
         animator.Play(nuevoEstado);
         animacionActual = nuevoEstado;
+    }
+    void run()
+    {
+        playerSpeed = playerRunSpeed;
+        
     }
 }
 
