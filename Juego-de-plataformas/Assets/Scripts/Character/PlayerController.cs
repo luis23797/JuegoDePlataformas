@@ -10,11 +10,14 @@ public class PlayerController : MonoBehaviour
     private bool groundedPlayer;
     public float playerInitialSpeed = 4.0f;
     public float playerSpeed = 4.0f;
+    public float playerNewSpeed=0;
     public float jumpHeight = 1.0f;
-    private float gravityValue = -9.81f;
+    public float gravityValue = -9.81f;
     private string animacionActual;
     public float playerRunSpeed = 7.0f;
     public bool running = false;
+    public float acelPerSecond;
+    private float timeToMaxSpd = 2f;
     Animator animator;
     //Estados de animacion
     const string iddle = "iddle";
@@ -57,16 +60,27 @@ public class PlayerController : MonoBehaviour
                 changeAnimationState(walk);
             }
         }
+        if (Input.GetAxis("Horizontal") != 0)
+        {
+            playerNewSpeed += acelPerSecond * Time.deltaTime;
+            playerNewSpeed = Mathf.Min(playerNewSpeed, playerSpeed);
+        }
+       else
+        {
+            playerNewSpeed = 0;
+        }
     }
     private void FixedUpdate()
     {
+        setTimeToMaxSpeed();
+       
         if (!running || !controller.isGrounded)
         {
             playerSpeed = playerInitialSpeed;
         }
         groundedPlayer = controller.isGrounded;
         Debug.Log(controller.isGrounded);
-        if (controller.isGrounded && !running)
+        if (groundedPlayer && !running)
         {
             if (Input.GetAxis("Horizontal")!=0)
             {
@@ -78,7 +92,7 @@ public class PlayerController : MonoBehaviour
             }
            
         }
-        if (!controller.isGrounded)
+        if (!groundedPlayer)
         {
             changeAnimationState(fall);
         }
@@ -86,8 +100,16 @@ public class PlayerController : MonoBehaviour
         {
             playerVelocity.y = 0f;
         }
+
         Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
-        controller.Move(move * Time.deltaTime * playerSpeed);
+        
+        
+        if (!groundedPlayer)
+        {
+           
+            controller.Move(move * Time.deltaTime * (playerNewSpeed/2));
+        }
+        controller.SimpleMove(move * playerNewSpeed);
 
         if (move != Vector3.zero)
         {
@@ -95,8 +117,12 @@ public class PlayerController : MonoBehaviour
         }
 
         // Changes the height position of the player..
-        
 
+        setGravity();
+        
+    }
+    void setGravity()
+    {
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
     }
@@ -114,6 +140,18 @@ public class PlayerController : MonoBehaviour
     {
         playerSpeed = playerRunSpeed;
         
+    }
+    void setTimeToMaxSpeed()
+    {
+        if (playerSpeed == playerInitialSpeed)
+        {
+            timeToMaxSpd = 1;
+        }
+        if (playerSpeed == playerRunSpeed)
+        {
+            timeToMaxSpd = 2;
+        }
+        acelPerSecond = playerSpeed / timeToMaxSpd;
     }
 }
 

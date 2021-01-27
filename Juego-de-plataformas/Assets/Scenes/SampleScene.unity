@@ -805,9 +805,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInitialSpeed: 2
   playerSpeed: 2
+  playerNewSpeed: 0
   jumpHeight: 1
+  gravityValue: -9.81
   playerRunSpeed: 4
   running: 0
+  acelPerSecond: 0
 --- !u!143 &1715727840
 CharacterController:
   m_ObjectHideFlags: 0
@@ -874,9 +877,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInitialSpeed: 4
   playerSpeed: 4
-  jumpHeight: 1
+  playerNewSpeed: 0
+  jumpHeight: 2.5
+  gravityValue: -30
   playerRunSpeed: 7
   running: 0
+  acelPerSecond: 0
 --- !u!143 &1857808262
 CharacterController:
   m_ObjectHideFlags: 0
