@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     public float jumpHeight = 1.0f;
     public float gravityValue = -9.81f;
     private string animacionActual;
-    public float playerRunSpeed = 7.0f;
+    public float playerRunSpeed = 11.0f;
     public bool running = false;
     public float acelPerSecond;
     private float timeToMaxSpd = 2f;
@@ -107,7 +107,7 @@ public class PlayerController : MonoBehaviour
         if (!groundedPlayer)
         {
            
-            controller.Move(move * Time.deltaTime * (playerNewSpeed/2));
+            controller.Move(move * Time.deltaTime * (playerNewSpeed));
         }
         controller.SimpleMove(move * playerNewSpeed);
 
@@ -128,6 +128,10 @@ public class PlayerController : MonoBehaviour
     }
     void jump()
     {
+        if (playerSpeed==playerInitialSpeed)
+        {
+            playerNewSpeed /= 2;
+        }
         playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
     }
     void changeAnimationState(string nuevoEstado)
@@ -145,11 +149,11 @@ public class PlayerController : MonoBehaviour
     {
         if (playerSpeed == playerInitialSpeed)
         {
-            timeToMaxSpd = 1;
+            timeToMaxSpd = .3f;
         }
         if (playerSpeed == playerRunSpeed)
         {
-            timeToMaxSpd = 2;
+            timeToMaxSpd = 1.2f;
         }
         acelPerSecond = playerSpeed / timeToMaxSpd;
     }
