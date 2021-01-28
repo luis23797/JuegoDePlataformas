@@ -71,3 +71,6 @@ crashlytics-build.properties
 [Aa]ssets/[Ss]treamingAssets/aa/*
 Juego-de-plataformas/Library/ArtifactDB
 Juego-de-plataformas/Library/SourceAssetDB
+Juego-de-plataformas/Library/ArtifactDB
+*.log
+Juego-de-plataformas/Library/SourceAssetDB
