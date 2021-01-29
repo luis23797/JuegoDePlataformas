@@ -7,17 +7,19 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     private CharacterController controller;
     private Vector3 playerVelocity;
-    private bool groundedPlayer;
-    public float playerInitialSpeed = 4.0f;
-    public float playerSpeed = 4.0f;
-    public float playerNewSpeed=0;
-    public float jumpHeight = 1.0f;
-    public float gravityValue = -9.81f;
-    private string animacionActual;
-    public float playerRunSpeed = 11.0f;
-    public bool running = false;
-    public float acelPerSecond;
-    private float timeToMaxSpd = 2f;
+    private bool groundedPlayer;    //Checar si el jugador esta en el suelo
+    public float playerInitialSpeed = 4.0f; //Velocidad maxima al caminar 
+    public float playerSpeed = 4.0f; //Velocidad maxima actual del jugador
+    public float playerNewSpeed=0; //Velocidad actual del jugador
+    public float jumpHeight = 1.0f; //Altura de salto
+    public float gravityValue = -9.81f; //Gravedad del jugador
+    private string animacionActual; //Animacion del jugador
+    public float playerRunSpeed = 11.0f;    //Velocidad maxima al correr
+    public bool running = false;    //Estado de correr
+    public float acelPerSecond; //Cantidad de aceleracion a aumentar por segundo para llegar a la maxima
+    private float timeToMaxSpd; //Tiempo para llegar a la velocidad maxima vease la funcion setTimeToMaxSpeed
+    public bool banderaSalto=false;
+    public bool noInputSlide = false;
     Animator animator;
     //Estados de animacion
     const string iddle = "iddle";
@@ -35,8 +37,8 @@ public class PlayerController : MonoBehaviour
     {
 
 
-        //Debug.Log(Input.GetButtonDown("Jump"));
         
+        //Acciones del jugador cuando esta en el piso
         if (groundedPlayer)
         {
             if (Input.GetButtonDown("Jump"))
@@ -62,24 +64,43 @@ public class PlayerController : MonoBehaviour
         }
         if (Input.GetAxis("Horizontal") != 0)
         {
-            playerNewSpeed += acelPerSecond * Time.deltaTime;
-            playerNewSpeed = Mathf.Min(playerNewSpeed, playerSpeed);
+            /*playerNewSpeed += acelPerSecond * Time.deltaTime;
+            playerNewSpeed = Mathf.Min(playerNewSpeed, playerSpeed);*/
+           
+            if (playerNewSpeed<playerSpeed)
+            {
+                playerNewSpeed += acelPerSecond * Time.deltaTime;
+            }
         }
-       else
+       /*else
         {
+           
             playerNewSpeed = 0;
-        }
+        }*/
     }
     private void FixedUpdate()
     {
         setTimeToMaxSpeed();
        
+        if (playerNewSpeed < 0)
+        {
+            noInputSlide = true;
+            playerNewSpeed = 0;
+        }
+        if (playerNewSpeed>playerSpeed && !noInputSlide)
+        {
+            playerNewSpeed = Mathf.Round(playerNewSpeed);
+        }
+
         if (!running || !controller.isGrounded)
         {
             playerSpeed = playerInitialSpeed;
         }
         groundedPlayer = controller.isGrounded;
-        Debug.Log(controller.isGrounded);
+        if (playerNewSpeed==0)
+        {
+            banderaSalto = false;
+        }
         if (groundedPlayer && !running)
         {
             if (Input.GetAxis("Horizontal")!=0)
@@ -103,13 +124,44 @@ public class PlayerController : MonoBehaviour
 
         Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
         
-        
+
         if (!groundedPlayer)
         {
-           
+            banderaSalto = true;
             controller.Move(move * Time.deltaTime * (playerNewSpeed));
         }
-        controller.SimpleMove(move * playerNewSpeed);
+        if (Input.GetAxis("Horizontal") == 0 && groundedPlayer)
+        {
+            if (playerNewSpeed <= 4)
+            {
+                playerNewSpeed = 0;
+                noInputSlide = false;
+            }
+            if (playerNewSpeed > 4)
+            {
+                noInputSlide = true;
+            }
+            NoInputSlide();
+            
+        }
+            if (Input.GetAxis("Horizontal") >= -.4 && Input.GetAxis("Horizontal") <= .4 && playerNewSpeed>1 && groundedPlayer)
+        {
+            if (playerNewSpeed <= 4)
+            {
+                playerNewSpeed = 0;
+                noInputSlide = false;
+            }
+            if (playerNewSpeed>4)
+            {
+                noInputSlide = true;
+            }
+            NoInputSlide();
+        }
+        else
+        {
+            controller.SimpleMove(move * playerNewSpeed);
+        }
+       
 
         if (move != Vector3.zero)
         {
@@ -156,6 +208,17 @@ public class PlayerController : MonoBehaviour
             timeToMaxSpd = 1.2f;
         }
         acelPerSecond = playerSpeed / timeToMaxSpd;
+    }
+    void NoInputSlide()
+    {
+        
+        float  res = playerNewSpeed *2;
+        if (playerNewSpeed > 0)
+        {
+            playerNewSpeed -= res * Time.deltaTime;
+            
+        }
+        controller.SimpleMove(gameObject.transform.forward * playerNewSpeed);
     }
 }
 

@@ -880,7 +880,7 @@ MonoBehaviour:
   playerNewSpeed: 0
   jumpHeight: 2.5
   gravityValue: -30
-  playerRunSpeed: 12
+  playerRunSpeed: 9
   running: 0
   acelPerSecond: 0
 --- !u!143 &1857808262
