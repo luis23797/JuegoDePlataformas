@@ -37,7 +37,7 @@ public class PlayerController : MonoBehaviour
     {
 
 
-        
+      //Mapeo de los inputs en el update para que no se pierdan en el fixed update  
         //Acciones del jugador cuando esta en el piso
         if (groundedPlayer)
         {
@@ -80,6 +80,7 @@ public class PlayerController : MonoBehaviour
     }
     private void FixedUpdate()
     {
+        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
         setTimeToMaxSpeed();
        
         if (playerNewSpeed < 0)
@@ -101,83 +102,63 @@ public class PlayerController : MonoBehaviour
         {
             banderaSalto = false;
         }
-        if (groundedPlayer && !running)
-        {
-            if (Input.GetAxis("Horizontal")!=0)
+        //Todas las acciones cuando el personaje esta en el suelo
+        if(groundedPlayer){
+            if (!running)
             {
-                changeAnimationState(walk);
-            }
-            else
-            {
-                changeAnimationState(iddle);
-            }
+                if (Input.GetAxis("Horizontal")!=0)
+                {
+                    changeAnimationState(walk);
+                }
+                else
+                {
+                    changeAnimationState(iddle);
+                }
            
-        }
-        if (!groundedPlayer)
-        {
-            changeAnimationState(fall);
-        }
-        if (groundedPlayer && playerVelocity.y < 0)
-        {
-            playerVelocity.y = 0f;
-        }
-
-        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
-        
-
-        if (!groundedPlayer)
-        {
-            banderaSalto = true;
-            controller.Move(move * Time.deltaTime * (playerNewSpeed));
-        }
-        if (Input.GetAxis("Horizontal") == 0 && groundedPlayer)
-        {
-            if (playerNewSpeed <= 4)
-            {
-                playerNewSpeed = 0;
-                noInputSlide = false;
             }
-            if (playerNewSpeed > 4)
+            if (playerVelocity.y < 0)
             {
-                noInputSlide = true;
+                playerVelocity.y = 0f;
             }
-            NoInputSlide();
             
         }
-            if (Input.GetAxis("Horizontal") >= -.4 && Input.GetAxis("Horizontal") <= .4 && playerNewSpeed>1 && groundedPlayer)
-        {
-            if (playerNewSpeed <= 4)
+        //Acciones que no pueden estar en un estado en especifico de ground y no ground
+        if ((Input.GetAxis("Horizontal") >= -.4 && Input.GetAxis("Horizontal") <= .4 && playerNewSpeed>1 && groundedPlayer) || (Input.GetAxis("Horizontal") == 0 && groundedPlayer))
             {
-                playerNewSpeed = 0;
-                noInputSlide = false;
-            }
-            if (playerNewSpeed>4)
-            {
-                noInputSlide = true;
-            }
-            NoInputSlide();
-        }
-        else
-        {
-            controller.SimpleMove(move * playerNewSpeed);
-        }
-       
+                if (playerNewSpeed <= 4)
+                {
+                    playerNewSpeed = 0;
+                    noInputSlide = false;
+                }
+                if (playerNewSpeed>4)
+                {
+                    noInputSlide = true;
+                }
+                NoInputSlide();
+            }else{
+                controller.SimpleMove(move * playerNewSpeed);
+            }   
 
+        //Todas las acciones cuando el jugador no esta en el suelo
+        if(!groundedPlayer){
+            changeAnimationState(fall);
+            banderaSalto = true;
+            controller.Move(move * Time.deltaTime * (playerNewSpeed));
+            
+        }
         if (move != Vector3.zero)
         {
             gameObject.transform.forward = move;
         }
-
-        // Changes the height position of the player..
-
-        setGravity();
-        
+        setGravity();    
     }
+    //Funcion para la aplicacion de la gravedad general
     void setGravity()
     {
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
     }
+    //Funcion de brinco, se encarga de disminuir la velocidad de movimiento a la mitad para mejorar la experiencia
     void jump()
     {
         if (playerSpeed==playerInitialSpeed)
@@ -186,17 +167,20 @@ public class PlayerController : MonoBehaviour
         }
         playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
     }
+    //Funcion utilizada para cambiar estado de una animacion
     void changeAnimationState(string nuevoEstado)
     {
         if (animacionActual == nuevoEstado) return;
         animator.Play(nuevoEstado);
         animacionActual = nuevoEstado;
     }
+    //Funcion para correr, solo cambia el valor del limite de la nueva velocidad
     void run()
     {
         playerSpeed = playerRunSpeed;
         
     }
+    //Funcion encargada del calculo para llegar a la velocidad limite
     void setTimeToMaxSpeed()
     {
         if (playerSpeed == playerInitialSpeed)
@@ -209,6 +193,7 @@ public class PlayerController : MonoBehaviour
         }
         acelPerSecond = playerSpeed / timeToMaxSpd;
     }
+    //Funcion que se encarga del deslice del personaje
     void NoInputSlide()
     {
         
